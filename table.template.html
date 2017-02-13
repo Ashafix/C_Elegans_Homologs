@@ -1,0 +1,48 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+<title>JSAV</title>
+
+
+<link href="http://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css"/>
+<link rel="stylesheet" href="http://tablesorter.com/themes/blue/style.css" type="text/css" />
+
+<script type='text/javascript' src='http://code.jquery.com/jquery-3.1.1.min.js'></script>
+<script type='text/javascript' src='http://code.jquery.com/ui/1.12.0/jquery-ui.min.js'></script>
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.5/js/jquery.tablesorter.js'></script>
+
+<script>
+$(document).ready(function() 
+    { 
+        $("#myTable").tablesorter(); 
+    } 
+); 
+</script>
+
+
+</head>
+
+<body>
+
+<table id='myTable' class='tablesorter'>
+  <thead>
+  {%- for row in table[0] %}
+    <th>{{ row }}</th>
+      {%-endfor %}
+  </thead>
+  <tbody>
+  
+    {%- for row in table[1:] %}
+    <tr>
+    {%- for column in row %}
+      <td>{{ column }}</td>
+    {%- endfor %}
+    </tr>
+  
+{%- endfor %}
+</tbody>
+</table>
+
+
+</body>
+</html>

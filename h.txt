@@ -1,0 +1,60 @@
+#                                                                  --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----
+# target name         accession  query name             accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target
+# ------------------- ----------   -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------
+sp|O60494|CUBN_HUMAN  -          tr|P90732|P90732_CAEEL -           5.1e-102  346.8 148.0   4.9e-09   39.8   0.3  24.7   9   7  14  23  23  23  18 Cubilin OS=Homo sapiens GN=CUBN PE=1 SV=5
+sp|Q96PZ7|CSMD1_HUMAN -          tr|P90732|P90732_CAEEL -            7.3e-98  333.1  70.6   1.9e-09   41.2   1.6  14.2  14   0   0  14  14  14  14 CUB and sushi domain-containing protein 1 OS=Homo sapiens GN=CSMD1 PE=1 SV=2
+sp|Q7Z408|CSMD2_HUMAN -          tr|P90732|P90732_CAEEL -              8e-97  329.6  65.2   2.5e-08   37.5   0.1  14.1  14   0   0  14  14  14  14 CUB and sushi domain-containing protein 2 OS=Homo sapiens GN=CSMD2 PE=1 SV=2
+sp|Q7Z407|CSMD3_HUMAN -          tr|P90732|P90732_CAEEL -            3.8e-94  320.8  78.9   2.8e-11   47.2   0.6  14.2  14   0   0  14  14  14  13 CUB and sushi domain-containing protein 3 OS=Homo sapiens GN=CSMD3 PE=2 SV=3
+sp|Q9Y6L7|TLL2_HUMAN  -          tr|P90732|P90732_CAEEL -            6.3e-46  161.6   4.2   2.2e-10   44.3   0.0   5.1   4   1   1   5   5   5   5 Tolloid-like protein 2 OS=Homo sapiens GN=TLL2 PE=1 SV=1
+sp|O43897|TLL1_HUMAN  -          tr|P90732|P90732_CAEEL -            1.5e-41  147.2   4.7   2.7e-09   40.7   0.2   5.1   4   1   1   5   5   5   5 Tolloid-like protein 1 OS=Homo sapiens GN=TLL1 PE=1 SV=1
+sp|P13497|BMP1_HUMAN  -          tr|P90732|P90732_CAEEL -            3.8e-39  139.2   6.2   8.7e-09   39.0   0.0   5.1   4   1   1   5   5   5   5 Bone morphogenetic protein 1 OS=Homo sapiens GN=BMP1 PE=1 SV=2
+sp|Q9UBG0|MRC2_HUMAN  -          tr|P90732|P90732_CAEEL -            2.1e-21   80.6  47.5   8.3e-05   25.9   2.7   8.2   1   1   6   7   7   7   6 C-type mannose receptor 2 OS=Homo sapiens GN=MRC2 PE=1 SV=2
+sp|Q9BY79|MFRP_HUMAN  -          tr|P90732|P90732_CAEEL -            2.6e-17   67.1   6.2   1.4e-08   38.3   0.7   2.1   2   0   0   2   2   2   2 Membrane frizzled-related protein OS=Homo sapiens GN=MFRP PE=1 SV=1
+sp|Q5VXM1|CDCP2_HUMAN -          tr|P90732|P90732_CAEEL -            7.5e-16   62.3  10.4   3.1e-05   27.3   0.1   3.2   1   1   2   3   3   3   3 CUB domain-containing protein 2 OS=Homo sapiens GN=CDCP2 PE=2 SV=1
+sp|P98073|ENTK_HUMAN  -          tr|P90732|P90732_CAEEL -            1.5e-15   61.3   5.9   1.7e-11   48.0   0.7   2.3   2   0   0   2   2   2   2 Enteropeptidase OS=Homo sapiens GN=TMPRSS15 PE=1 SV=3
+sp|Q86UP6|CUZD1_HUMAN -          tr|P90732|P90732_CAEEL -            1.8e-13   54.5   2.1   5.7e-13   52.8   0.5   2.0   1   1   1   2   2   2   1 CUB and zona pellucida-like domain-containing protein 1 OS=Homo sapiens GN=CUZD1 PE=2 SV=1
+sp|Q13018|PLA2R_HUMAN -          tr|P90732|P90732_CAEEL -            6.5e-13   52.6  35.4    0.0027   20.9   2.0   5.8   3   1   2   5   5   5   3 Secretory phospholipase A2 receptor OS=Homo sapiens GN=PLA2R1 PE=1 SV=2
+sp|Q9UKZ9|PCOC2_HUMAN -          tr|P90732|P90732_CAEEL -            3.5e-11   46.9   0.5   0.00015   25.1   0.2   2.1   1   1   1   2   2   2   2 Procollagen C-endopeptidase enhancer 2 OS=Homo sapiens GN=PCOLCE2 PE=1 SV=1
+sp|Q15113|PCOC1_HUMAN -          tr|P90732|P90732_CAEEL -            1.8e-09   41.3   2.4   0.00085   22.5   0.2   2.1   2   0   0   2   2   2   2 Procollagen C-endopeptidase enhancer 1 OS=Homo sapiens GN=PCOLCE PE=1 SV=2
+sp|Q86SQ4|GP126_HUMAN -          tr|P90732|P90732_CAEEL -            4.3e-08   36.7   0.9   7.3e-08   36.0   0.9   1.3   1   0   0   1   1   1   1 G-protein coupled receptor 126 OS=Homo sapiens GN=GPR126 PE=1 SV=3
+sp|Q6UW15|REG3G_HUMAN -          tr|P90732|P90732_CAEEL -            8.1e-08   35.8   1.1   9.8e-08   35.5   1.1   1.1   1   0   0   1   1   1   1 Regenerating islet-derived protein 3-gamma OS=Homo sapiens GN=REG3G PE=1 SV=1
+sp|P48740|MASP1_HUMAN -          tr|P90732|P90732_CAEEL -            8.1e-08   35.8   0.3     9e-05   25.8   0.0   2.2   2   0   0   2   2   2   2 Mannan-binding lectin serine protease 1 OS=Homo sapiens GN=MASP1 PE=1 SV=3
+sp|O60462|NRP2_HUMAN  -          tr|P90732|P90732_CAEEL -            4.1e-07   33.5   0.9     0.015   18.4   0.1   2.2   2   0   0   2   2   2   2 Neuropilin-2 OS=Homo sapiens GN=NRP2 PE=1 SV=2
+sp|P06734|FCER2_HUMAN -          tr|P90732|P90732_CAEEL -              5e-07   33.2   0.9   6.8e-07   32.8   0.9   1.1   1   0   0   1   1   1   1 Low affinity immunoglobulin epsilon Fc receptor OS=Homo sapiens GN=FCER2 PE=1 SV=1
+sp|P00736|C1R_HUMAN   -          tr|P90732|P90732_CAEEL -            5.3e-07   33.1   0.3    0.0075   19.4   0.1   2.3   2   0   0   2   2   2   2 Complement C1r subcomponent OS=Homo sapiens GN=C1R PE=1 SV=2
+sp|P09871|C1S_HUMAN   -          tr|P90732|P90732_CAEEL -            2.2e-06   31.1   0.2     0.041   17.0   0.0   2.2   2   0   0   2   2   2   2 Complement C1s subcomponent OS=Homo sapiens GN=C1S PE=1 SV=1
+sp|O00187|MASP2_HUMAN -          tr|P90732|P90732_CAEEL -            2.5e-06   30.9   5.4    0.0002   24.6   0.1   2.6   3   0   0   3   3   2   2 Mannan-binding lectin serine protease 2 OS=Homo sapiens GN=MASP2 PE=1 SV=4
+sp|Q53EL9|SEZ6_HUMAN  -          tr|P90732|P90732_CAEEL -            2.8e-06   30.8   3.0    0.0066   19.6   0.0   2.8   3   0   0   3   3   2   2 Seizure protein 6 homolog OS=Homo sapiens GN=SEZ6 PE=1 SV=2
+sp|O14786|NRP1_HUMAN  -          tr|P90732|P90732_CAEEL -            4.2e-06   30.2   0.9      0.02   18.0   0.1   2.2   2   0   0   2   2   2   2 Neuropilin-1 OS=Homo sapiens GN=NRP1 PE=1 SV=3
+sp|Q96PD2|DCBD2_HUMAN -          tr|P90732|P90732_CAEEL -            3.2e-05   27.2   0.1     5e-05   26.6   0.1   1.2   1   0   0   1   1   1   1 Discoidin, CUB and LCCL domain-containing protein 2 OS=Homo sapiens GN=DCBLD2 PE=1 SV=1
+sp|Q8NC67|NETO2_HUMAN -          tr|P90732|P90732_CAEEL -            0.00015   25.1   0.0    0.0002   24.6   0.0   1.1   1   0   0   1   1   1   1 Neuropilin and tolloid-like protein 2 OS=Homo sapiens GN=NETO2 PE=1 SV=1
+sp|Q5KU26|COL12_HUMAN -          tr|P90732|P90732_CAEEL -             0.0006   23.0   0.4   0.00095   22.4   0.4   1.2   1   0   0   1   1   1   1 Collectin-12 OS=Homo sapiens GN=COLEC12 PE=1 SV=3
+sp|Q9H2X3|CLC4M_HUMAN -          tr|P90732|P90732_CAEEL -            0.00069   22.8   2.4   0.00093   22.4   2.4   1.2   1   0   0   1   1   1   1 C-type lectin domain family 4 member M OS=Homo sapiens GN=CLEC4M PE=1 SV=1
+sp|Q8TDF5|NETO1_HUMAN -          tr|P90732|P90732_CAEEL -            0.00085   22.5   0.0    0.0012   22.0   0.0   1.2   1   0   0   1   1   1   1 Neuropilin and tolloid-like protein 1 OS=Homo sapiens GN=NETO1 PE=2 SV=2
+sp|Q9Y2Y8|PRG3_HUMAN  -          tr|P90732|P90732_CAEEL -             0.0015   21.7   3.0    0.0018   21.5   3.0   1.1   1   0   0   1   1   1   1 Proteoglycan 3 OS=Homo sapiens GN=PRG3 PE=1 SV=2
+sp|Q6UXB4|CLC4G_HUMAN -          tr|P90732|P90732_CAEEL -             0.0047   20.1   0.8    0.0066   19.6   0.8   1.1   1   0   0   1   1   1   1 C-type lectin domain family 4 member G OS=Homo sapiens GN=CLEC4G PE=1 SV=1
+sp|Q8IUN9|CLC10_HUMAN -          tr|P90732|P90732_CAEEL -             0.0056   19.8   2.2     0.008   19.3   2.2   1.2   1   0   0   1   1   1   1 C-type lectin domain family 10 member A OS=Homo sapiens GN=CLEC10A PE=2 SV=1
+sp|Q9NNX6|CD209_HUMAN -          tr|P90732|P90732_CAEEL -             0.0062   19.7   2.9    0.0082   19.3   2.9   1.1   1   0   0   1   1   1   1 CD209 antigen OS=Homo sapiens GN=CD209 PE=1 SV=1
+sp|P05452|TETN_HUMAN  -          tr|P90732|P90732_CAEEL -              0.016   18.3   0.1     0.024   17.8   0.1   1.2   1   0   0   1   1   1   0 Tetranectin OS=Homo sapiens GN=CLEC3B PE=1 SV=3
+sp|P07307|ASGR2_HUMAN -          tr|P90732|P90732_CAEEL -              0.017   18.3   5.2     0.024   17.8   5.2   1.1   1   0   0   1   1   1   0 Asialoglycoprotein receptor 2 OS=Homo sapiens GN=ASGR2 PE=1 SV=2
+sp|P98066|TSG6_HUMAN  -          tr|P90732|P90732_CAEEL -              0.021   18.0   0.1     0.029   17.5   0.1   1.3   1   0   0   1   1   1   0 Tumor necrosis factor-inducible gene 6 protein OS=Homo sapiens GN=TNFAIP6 PE=1 SV=2
+sp|Q7RTZ1|OVCH2_HUMAN -          tr|P90732|P90732_CAEEL -              0.021   17.9   0.2     0.072   16.2   0.1   1.7   1   1   1   2   2   2   0 Ovochymase-2 OS=Homo sapiens GN=OVCH2 PE=3 SV=2
+sp|Q7RTY7|OVCH1_HUMAN -          tr|P90732|P90732_CAEEL -              0.034   17.3   0.8     0.089   15.9   0.0   1.9   2   0   0   2   2   2   0 Ovochymase-1 OS=Homo sapiens GN=OVCH1 PE=2 SV=2
+sp|O75596|CLC3A_HUMAN -          tr|P90732|P90732_CAEEL -              0.044   16.9   0.0     0.052   16.6   0.0   1.1   1   0   0   1   1   1   0 C-type lectin domain family 3 member A OS=Homo sapiens GN=CLEC3A PE=1 SV=1
+sp|Q6ZS10|CL17A_HUMAN -          tr|P90732|P90732_CAEEL -              0.064   16.3   1.3     0.085   15.9   1.3   1.2   1   0   0   1   1   1   0 C-type lectin domain family 17, member A OS=Homo sapiens GN=CLEC17A PE=1 SV=2
+sp|Q9GZP0|PDGFD_HUMAN -          tr|P90732|P90732_CAEEL -               0.12   15.5   0.0      0.16   15.0   0.0   1.1   1   0   0   1   1   1   0 Platelet-derived growth factor D OS=Homo sapiens GN=PDGFD PE=1 SV=1
+sp|Q92478|CLC2B_HUMAN -          tr|P90732|P90732_CAEEL -                0.2   14.7   0.3      0.22   14.6   0.3   1.1   1   0   0   1   1   1   0 C-type lectin domain family 2 member B OS=Homo sapiens GN=CLEC2B PE=1 SV=2
+sp|Q8WXI8|CLC4D_HUMAN -          tr|P90732|P90732_CAEEL -               0.22   14.6   0.1      0.24   14.5   0.1   1.1   1   0   0   1   1   1   0 C-type lectin domain family 4 member D OS=Homo sapiens GN=CLEC4D PE=1 SV=2
+sp|Q8N8Z6|DCBD1_HUMAN -          tr|P90732|P90732_CAEEL -               0.29   14.2   0.1      0.46   13.5   0.1   1.2   1   0   0   1   1   1   0 Discoidin, CUB and LCCL domain-containing protein 1 OS=Homo sapiens GN=DCBLD1 PE=1 SV=2
+sp|Q9UMR7|CLC4A_HUMAN -          tr|P90732|P90732_CAEEL -               0.35   13.9   0.7      0.44   13.6   0.7   1.1   1   0   0   1   1   1   0 C-type lectin domain family 4 member A OS=Homo sapiens GN=CLEC4A PE=1 SV=1
+sp|P35247|SFTPD_HUMAN -          tr|P90732|P90732_CAEEL -               0.79   12.7   0.0         1   12.4   0.0   1.1   1   0   0   1   1   1   0 Pulmonary surfactant-associated protein D OS=Homo sapiens GN=SFTPD PE=1 SV=3
+#
+# Program:         phmmer
+# Version:         3.1b2 (February 2015)
+# Pipeline mode:   SEARCH
+# Query file:      P90732.fasta
+# Target file:     uniprot_sprot.fasta
+# Option settings: ../tools/hmmer-3.1b2/src/phmmer -A align.txt --tblout tmp.txt P90732.fasta uniprot_sprot.fasta 
+# Current dir:     /media/ashafix/WesternDigital/data
+# Date:            Sun Feb 12 07:04:48 2017
+# [ok]

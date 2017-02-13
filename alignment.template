@@ -1,0 +1,81 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+<title>JSAV</title>
+
+<!-- JQuery and JQuery-UI -->
+<link href="http://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css" />
+<script type='text/javascript' src='http://code.jquery.com/jquery-3.1.1.min.js'></script>
+<script type='text/javascript' src='http://code.jquery.com/ui/1.12.0/jquery-ui.min.js'></script>
+
+<!-- JSAV -->
+<link href="https://rawgit.com/AndrewCRMartin/JSAV/master/JSAV.css" rel="stylesheet" />
+<script src='https://rawgit.com/AndrewCRMartin/JSAV/278a768e25bf7e2c64d1c3084ddae4847fee0c0b/JSAV.js'></script>
+
+<!-- If using tooltipster -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tooltipster/3.3.0/css/tooltipster.css" rel="stylesheet" />
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/tooltipster/3.3.0/js/jquery.tooltipster.js'></script>
+<script>
+function enableTooltipster()
+{
+    $(document).ready(function() {
+        $('.tooltip').tooltipster();
+    });
+}
+enableTooltipster();
+</script>
+<!-- END -->
+
+</head>
+
+<body>
+<script type='text/javascript'>
+var MySeqs = [];
+
+
+    {% for item in items %}
+    MySeqs.push({id: "{{ item.id }}",  sequence: "{{ item.sequence }}"});
+    {% endfor %}
+
+</script>
+
+<h1></h1>
+<p></p>
+
+<script type='text/javascript'>
+function myAction(divId, sequences)
+{
+   var seqString = "";
+   for(var i=0; i<sequences.length; i++)
+   {
+       seqString += ">" + sequences[i].id + "\n";
+       seqString += sequences[i].sequence + "\n\n";
+   }
+   alert(seqString);
+}
+
+var MyOptions = Array();
+MyOptions.sortable = true;
+MyOptions.selectable = true;
+MyOptions.deletable = true;
+MyOptions.border = false;
+MyOptions.highlight = [3,5,10,14];
+//MyOptions.submit = "http://www.bioinf.org.uk/cgi-bin/echo.pl";
+//MyOptions.action = "myAction";
+//MyOptions.actionLabel = "My Action";
+MyOptions.toggleDotify = true;
+MyOptions.toggleNocolour = true;
+MyOptions.fasta = true;
+MyOptions.consensus = true;
+MyOptions.colourScheme = "zappo";
+MyOptions.selectColour = true;
+MyOptions.callback = "enableTooltipster";
+//MyOptions.idSubmit = "http://www.bioinf.org.uk/cgi-bin/echo.pl?seq=";
+//MyOptions.idSubmitClean = true;
+//MyOptions.idSubmitAttribute = "id";
+
+printJSAV('sequenceDisplay', MySeqs, MyOptions);
+</script>
+
+</body>
+</html>
