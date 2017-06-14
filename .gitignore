@@ -59,3 +59,5 @@ mapa_geneid_4_uniprot_crossref.tsv
 *.gz
 *.fasta
 *.aln
+57_top_candidates.xlsx
+57_top_candidates_No1.xlsx
