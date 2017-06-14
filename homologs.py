@@ -60,6 +60,10 @@ class homolog_finder():
         self.disease_synonyms = dict() #a dict with synonyms for neuro_diseases, key: a disease ontology entry, value: the corresponding MESH value
         self.disease_ontology_filename = disease_ontology_filename #the filename where the human disease ontology is stored
         self.uniprot_info = dict() #stores info about Uniprot entries which were retrieved, key: Uniprot ID, value: a dict with information
+        self.disgenet_map = None #a placeholder for a dict, key: UniProtID, value: GeneID
+        self.disgenet_map_filename ='mapa_geneid_4_uniprot_crossref.tsv'
+        self.human_homologs = None
+        self.diseases = None
         if xls_filename:
             #if a xls filename is specified, read all the data
             #initalize primary genes for all entries and find possible homologs
@@ -97,14 +101,36 @@ class homolog_finder():
                         if term.startswith('MESH:'):
                             self.disease_synonyms[term.split('MESH:')[1]] = neuro_disease
 
+    def get_diseases(self, print_output=True):
+        """
+        returns all diseases associated with all homologs
+        :return: a list with diseases
+        """
+        if self.diseases:
+            return self.diseases
+        self.diseases = list()
+
+        self.calculate_scores()
+        for primary_gene in self.homologs:
+            for homolog in self.homologs[primary_gene]:
+                dis = homolog.disgenet
+                if print_output:
+                    print(homolog.disgenet)
+                if dis.get('diseases') and len(dis['diseases']) > 0:
+                    self.diseases.append(homolog.disgenet)
+
+        return self.diseases
+
     def calculate_scores(self):
         """
         
         :return: 
         """
 
-        for homolog in list(self.homologs.values())[0]:
-            homolog.calculate_score()
+
+        for primary_gene in self.homologs:
+            for homolog in self.homologs[primary_gene]:
+                homolog.calculate_score(homolog_finder=self)
 
         return None
 
@@ -130,9 +156,11 @@ class homolog_finder():
     def get_human_homologs(self):
         """
         returns all human homologs
-        :return: 
+        :return: a dictionary with all homologs, key: primary gene, value: homolog
         """
-
+        print(self.human_homologs)
+        if not self.human_homologs == None:
+            return self.human_homologs
         self.human_homologs = dict()
         for primary_gene in self.homologs:
             print('#' * 40)
@@ -149,6 +177,7 @@ class homolog_finder():
                                                                      len(self.human_homologs[primary_gene])
                                                                      )
                   )
+        return self.human_homologs
 
     def get_info_from_uniprot(self, uniprot_id):
         """
@@ -161,7 +190,7 @@ class homolog_finder():
         attributes['organism'] = ''
         attributes['fullname'] = ''
         attributes['sequence'] = ''
-
+        attributes['gene_id'] = ''
         filename = 'uniprot/{}.xml'.format(uniprot_id)
         if not os.path.isfile(filename):
             r = requests.get('{0}/{1}.xml'.format(self.urls['uniprot'], uniprot_id))
@@ -214,9 +243,23 @@ class homolog_finder():
                 submittedName = [node for node in protein[0].getchildren() if node.tag.endswith('recommendedName')]
             if len(submittedName) != 1:
                 print('malformed XML for UniProt ID: {}\nexpected 1 submittedName or recommendedName'.format(uniprot_id))
-                attributes['fullname'] = ''
             else:
                 attributes['fullname'] = submittedName[0].getchildren()[0].text
+
+        gene_id_root = [node for node in entries[0].getchildren() if node.tag.endswith('gene')]
+        gene_found = False
+        if len(gene_id_root) != 1:
+            print('malformed XML for UniProt ID: {}\nexpected 1 gene\nTrying via API'.format(uniprot_id))
+        else:
+            #print(gene_id_root)
+            gene_id = [node for node in gene_id_root[0].getchildren() if
+                       (node.tag.endswith('name') and node.attrib.get('type') == 'primary')]
+            if len(gene_id) == 1:
+                gene_found = True
+                attributes['gene_id'] = gene_id[0].text
+        if not gene_found:
+            print('Could not find GeneName in XML for UniProt ID: {}\nTrying via API'.format(uniprot_id))
+            attributes['gene_id'] = self.uniprot_to_genename(uniprot_id)
 
         return attributes
     def find_homologs(self):
@@ -409,7 +452,6 @@ class homolog_finder():
                 table[-1].append('unknown')
             table[-1].append('<a href="{}.html" target="_blank">Open alignment</a>'.format(filename))
         result = self.render('table.template.html', {'table': table})
-        print(primary.wormbase_name)
         with open('{}.html'.format(primary.wormbase_name.replace('/', '_')), 'w') as f:
             f.write(result)
         self.alignment(filename)
@@ -483,81 +525,149 @@ class homolog_finder():
 
         return self.uniprot_genename[uniprot].split(';')[0]
 
-    def get_diseases_from_disgenet(self, gene, filename, overwrite=False):
+    def get_diseases_for_genes(self):
+        """
+        
+        :return: 
+        """
+        for gene in self.get_homologs():
+            self.get_disease_for_gene(self, gene.gene_id)
+
+
+    def get_disease_for_gene(self, gene):
+        """
+        
+        :param gene: a string with GeneID, e.g. SEZ6 
+        :return: 
         """
 
-        inspired from here:
+
+    def read_disgenet_map(self):
+        """
+        
+        :return: 
+        """
+
+        with open(self.disgenet_map_filename, 'r') as f:
+            lines = f.read().splitlines()
+
+        self.disgenet_map = dict()
+        for line in lines:
+            cells = line.split('\t')
+            self.disgenet_map[cells[0]] = cells[1]
+
+        return None
+    def get_diseases_from_disgenet(self, uniprot_id, filename='', overwrite=False):
+        """
+
+        inspired by:
         http://www.disgenet.org/ds/DisGeNET/scripts/disgenet_python3.py
         :param gene:
         :return:
         """
 
+        if not self.disgenet_map:
+            self.read_disgenet_map()
+        gene_id = self.disgenet_map.get(uniprot_id)
+        if not gene_id:
+            print('no gene ID found for {}'.format(uniprot_id))
+            return None
+        if not filename:
+            filename = 'disgenet/{}'.format(uniprot_id)
         if not overwrite:
             if os.path.isfile(filename):
                 with open(filename, 'r') as f:
                     return (f.read())
 
-        query = """
-                DEFINE
-                    c0='/data/gene_disease_summary',
-            c1='/data/diseases',
-            c2='/data/genes',
-            c3='/data/gene_roles',
-            c4='/data/sources'
-                ON
-                   'http://www.disgenet.org/web/DisGeNET'
-                SELECT
-                    c2 (geneId, name, uniprotId, description, pathName, pantherName),
-                    c1 (cui, name, diseaseClassName, STY, MESH, omimInt),
-                   c3 (PI, PL),
-                   c0 (score, pmids,  snps)
 
-                FROM
-                    c0
-                WHERE
-                    (
-                        c2.name = '{0}'
-                    AND
-                        c4 = 'ALL'
-                    )
-                ORDER BY
-                    c0.score DESC""".format(gene)
+#        query = """
+#                DEFINE
+#                    c0='/data/gene_disease_summary',
+#            c1='/data/diseases',
+#            c2='/data/genes',
+#            c3='/data/gene_roles',
+#            c4='/data/sources'
+#                ON
+#                   'http://www.disgenet.org/web/DisGeNET'
+#                SELECT
+#                    c2 (geneId, name, uniprotId, description, pathName, pantherName),
+#                    c1 (cui, name, diseaseClassName, STY, MESH, omimInt),
+#                   c3 (PI, PL),
+#                  c0 (score, pmids,  snps)
+#
+#                FROM
+#                    c0
+#                WHERE
+#                    (
+#                        c2.name = '{0}'
+#                    AND
+#                        c4 = 'ALL'
+#                    )
+#                ORDER BY
+#                    c0.score DESC""".format(uniprot_id)
+        query = """
+        DEFINE
+          	c0='/data/gene_disease_summary',
+	c1='/data/diseases',
+	c2='/data/genes',
+	c4='/data/sources'
+        ON
+           'http://www.disgenet.org/web/DisGeNET'
+        SELECT
+         	c1 (diseaseId, name, diseaseClassName, STY, MESH, OMIM, type ),
+	c2 (geneId, symbol,   uniprotId, description, pantherName ),
+	c0 (score, EI, Npmids, Nsnps)
+           
+        FROM
+            c0
+        WHERE
+            (
+                c2.geneId = '{0}'
+            AND
+                c4 = 'ALL'
+            )
+        ORDER BY
+            c0.score DESC""".format(gene_id)
         query = query.encode('utf-8')
         req = urllib.request.Request(self.urls['disgenet'])
         res = urllib.request.urlopen(req, query)
         data = res.read().decode("utf-8")
-        with open(filename, 'w') as f:
-            f.write(data)
+        if overwrite or not os.path.isfile(filename):
+            with open(filename, 'w') as f:
+                f.write(data)
         #self.parse_disgenet(data)
         return (data)
 
-    def get_disgenet(self, gene):
+    def get_disgenet(self, uniprot_id):
         """
 
-        :param gene: The Gene ID for which associated diseases should be found
+        :param uniprot_id: The uniprot ID for which associated diseases should be found
         :return:
         """
-        if not self.disgenet.get(gene):
-            filename = 'disgenet/{}.txt'.format(gene)
-            data = self.get_diseases_from_disgenet(gene, filename)
-            self.disgenet[gene] = self.parse_disgenet(self.filter_disgenet(data))
+        if not self.disgenet.get(uniprot_id):
+            filename = 'disgenet/{}.txt'.format(uniprot_id)
+            data = self.get_diseases_from_disgenet(uniprot_id, filename)
+            self.disgenet[uniprot_id] = self.parse_disgenet(self.filter_disgenet(data))
 
-        return self.disgenet[gene]
+        return self.disgenet[uniprot_id]
 
     def filter_disgenet(self, data):
         """
 
         :param self: 
         :param data: a result string from a DisGenet query 
-        :return: all lines which are associated with nerve disease, taken from self.neuro_diseases
+        :return: all lines which are associated with nerve disease, taken from self.disease_synonyms
         """
         filtered_diseases = list()
+        if not data:
+            return filtered_diseases
+
         lines = data.split('\n')
         for line in lines:
             cells = line.split('\t')
             if len(cells) < 11:
                 continue
-            if self.disease_synonyms.get(cells[10]):
+            if self.disease_synonyms.get(cells[4]):
                 filtered_diseases.append(line)
 
         return filtered_diseases
@@ -574,8 +684,8 @@ class homolog_finder():
         parsed_values['diseases'] = list()
         for line in data:
             cells = line.split('\t')
-            parsed_values['total score'] += float(cells[14])
-            parsed_values['diseases'].append(dict(disease=cells[7], score=float(cells[14])))
+            parsed_values['total score'] += float(cells[12])
+            parsed_values['diseases'].append(dict(disease=cells[1], score=float(cells[12])))
         return parsed_values
 
 class primary_gene():
@@ -679,7 +789,6 @@ class primary_gene():
             with open(filename, 'w') as f:
                 f.write(data)
         else:
-            print(filename)
             with open(filename, 'r') as f:
                 data = f.read()
 
@@ -753,6 +862,7 @@ class homolog_gene():
         self.name = name
         self.organism = organism
         self.sequence = sequence
+        self.disgenet = None #a place holder for info from disgenet
         if type(jackhmmer_files) == list:
             self.jackhmmer_files = jackhmmer_files
         else:
@@ -771,7 +881,7 @@ class homolog_gene():
 
         if uniprot_id and homolog_finder:
             uniprot_info = homolog_finder.get_info_from_uniprot(uniprot_id)
-            #print(uniprot_info)
+
             if not self.name:
                 self.name = uniprot_info['fullname']
             #if not self.description:
@@ -856,7 +966,6 @@ class homolog_gene():
                 "http://api.brain-map.org/api/v2/data/query.json?criteria=service::human_microarray_expression[probes$eq{0}][donors$eq{1}]".format(
                     ','.join(probes), donor), timeout=10)
             if r.status_code == 200:
-                print(r.text)
                 if json.loads(r.text).get('success'):
                     probes = json.loads(r.text)['msg']['probes']
                     with open(filename, 'w') as f:
@@ -890,14 +999,18 @@ class homolog_gene():
             if self.expressed_in_brain in values:
                 self.score = weights['brain']['values'][values.index(self.expressed_in_brain)]
                 self.score *= weights['brain']['weight']
-
+            if not self.disgenet and self.organism.lower() in ('human', 'homo sapiens'):
+                self.disgenet = homolog_finder.get_disgenet(self.uniprot_id)
+            else:
+                self.disgenet = dict()
+                self.score += 0 #nothing found, explicitly not increasing score
 
         return self.score
 
 
 
 #new_homolog_finder = homolog_finder(xls_filename='57_top_candidates.xlsx')
-new_homolog_finder = homolog_finder(xls_filename='57_top_candidates_No1.xlsx')
+new_homolog_finder = homolog_finder(xls_filename='57_top_candidates.xlsx')
 #for k in new_homolog_finder.homologs.keys():
 #    pass
 

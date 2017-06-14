@@ -55,3 +55,7 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+mapa_geneid_4_uniprot_crossref.tsv
+*.gz
+*.fasta
+*.aln
