@@ -1,3 +1,13 @@
+#specific folder
+uniprot/
+wormbase_protein/
+compara/
+uniprot/
+brain/
+disgenet/
+aliases/
+
+*.html
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
