@@ -859,24 +859,11 @@ if __name__ == '__main__':
         sys.exit(1)
     homolog_finder = HomologFinder(xls_filename=args.input_filename,
                                        jackhmmer=args.jackhmmer)
-    # for k in new_homolog_finder.homologs.keys():
-    #    pass
-
-    values = dict()
-    for i in range(1, 10):
-        values[str(i)] = i
-    values['-'] = 0
-    values['.'] = 0
-    values['*'] = 10
-
-    # for i in range(1, len(alignment)):
-    #    print(alignment[i].letter_annotations['posterior_probability'].count('*') / len(alignment[0].seq))
 
     for i in range(len(homolog_finder.homologs.keys())):
         k = list(homolog_finder.homologs.keys())[i]
         print(homolog_finder.homologs[k][0])
 
-    sys.exit()
     homolog_finder.calculate_scores()
     homolog_finder.get_disease_statistics()
 
