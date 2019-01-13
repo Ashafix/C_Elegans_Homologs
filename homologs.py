@@ -16,7 +16,7 @@ from PrimaryGene import PrimaryGene
 
 
 class HomologFinder():
-    def __init__(self, xls_filename="",
+    def __init__(self, xls_filename='',
                  urlUniprotId='http://www.uniprot.org/uniprot/?query=id',
                  urlCompara='https://rest.ensembl.org/homology/symbol/caenorhabditis_elegans/',
                  urlBrain='http://api.brain-map.org/api/v2/data/query.json?criteria=',
@@ -476,7 +476,7 @@ class HomologFinder():
 
         for c in cols:
             m = p.match(c.value)
-            if m:
+            if m is not None:
                 self.gene_ids.append(m.group(1))
             else:
                 self.gene_ids.append('')
@@ -699,39 +699,13 @@ class HomologFinder():
         if not gene_id:
             print('no gene ID found for {}'.format(uniprot_id))
             return None
-        if not filename:
+        if filename == '':
             filename = 'disgenet/{}'.format(uniprot_id)
-        if not overwrite:
-            if os.path.isfile(filename):
-                with open(filename, 'r') as f:
-                    return (f.read())
+        print(filename)
+        if not overwrite and os.path.isfile(filename):
+            with open(filename, 'r') as f:
+                return f.read()
 
-
-#        query = """
-#                DEFINE
-#                    c0='/data/gene_disease_summary',
-#            c1='/data/diseases',
-#            c2='/data/genes',
-#            c3='/data/gene_roles',
-#            c4='/data/sources'
-#                ON
-#                   'http://www.disgenet.org/web/DisGeNET'
-#                SELECT
-#                    c2 (geneId, name, uniprotId, description, pathName, pantherName),
-#                    c1 (cui, name, diseaseClassName, STY, MESH, omimInt),
-#                   c3 (PI, PL),
-#                  c0 (score, pmids,  snps)
-#
-#                FROM
-#                    c0
-#                WHERE
-#                    (
-#                        c2.name = '{0}'
-#                    AND
-#                        c4 = 'ALL'
-#                    )
-#                ORDER BY
-#                    c0.score DESC""".format(uniprot_id)
         query = """
         DEFINE
           	c0='/data/gene_disease_summary',
@@ -762,7 +736,6 @@ class HomologFinder():
         if overwrite or not os.path.isfile(filename):
             with open(filename, 'w') as f:
                 f.write(data)
-        #self.parse_disgenet(data)
         return data
 
     def get_disgenet(self, uniprot_id, overwrite=False):
@@ -771,7 +744,7 @@ class HomologFinder():
         :param uniprot_id: The uniprot ID for which associated diseases should be found
         :return:
         """
-        if not self.disgenet.get(uniprot_id) or overwrite:
+        if self.disgenet.get(uniprot_id) is None or overwrite:
             filename = 'disgenet/{}.txt'.format(uniprot_id)
             data = self.get_diseases_from_disgenet(uniprot_id, filename)
             self.disgenet[uniprot_id] = self.parse_disgenet(self.filter_disgenet(data))
@@ -829,6 +802,7 @@ def report(homolog_finder, disease_threshold=[0, 10**6]):
                 if not x.disgenet.get('diseases'):
                     print('{}\\t{}\{}'.format(x.primary.wormbase_name, x.name, homologs.x.expressed_in_brain))
 
+
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Finds homologs for C. Elegans genes in humans')
     parser.add_argument('input_filename', help='an Excel file which contains the C. Elegans genes')
@@ -839,6 +813,7 @@ def parse_args(args):
                         help='location of the UniProt Swiss-Pro FASTA file',
                         default='uniprot_sprot.fasta')
     return parser.parse_args(args)
+
 
 def validate_args(args):
     if not os.path.isfile(args.input_filename):

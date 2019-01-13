@@ -33,7 +33,7 @@ class HomologGene():
         self.name = name
         self.organism = organism
         self.sequence = sequence
-        self.disgenet = None  # a place holder for info from disgenet
+        self.disgenet = None  # a placeholder for info from disgenet
         if isinstance(jackhmmer_files, list):
             self.jackhmmer_files = jackhmmer_files
         else:
