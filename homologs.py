@@ -13,6 +13,21 @@ import jinja2
 import urllib.request, urllib.error, urllib.parse
 import xml.etree.ElementTree as ET
 import pronto
+import sys
+import os
+import xlrd
+import re
+import requests
+import json
+import pprint
+import bs4
+import time
+import subprocess
+from Bio import AlignIO
+import jinja2
+import urllib.request, urllib.error, urllib.parse
+import xml.etree.ElementTree as ET
+import pronto
 
 class homolog_finder():
     def __init__(self, xls_filename="",
@@ -425,7 +440,7 @@ class homolog_finder():
             for d in data:
                 if 'UniProt' in d.get('db_display_name'):
                     if not xl_sheet.cell_value(rowx=i, colx=3) == d.get('primary_id'):
-                        if error[0] == None:
+                        if error[0] is None:
                             error = (True, d.get('primary_id'))
                     else:
                         error = (False, '')
@@ -436,14 +451,14 @@ class homolog_finder():
                                                                                                                   colx=3),
                                                                                                               error[1]))
 
-            if error[0] == None:
+            if error[0] is None:
                 print('Warning in row {0}: No Uniprot ID found'.format(i + 1))
             # ID check
             error = (None, '')
             for d in data:
                 if 'wormbase_gseqname' in d.get('dbname'):
                     if not xl_sheet.cell_value(rowx=i, colx=2) == d.get('display_id'):
-                        if error[0] == None:
+                        if error[0] is None:
                             error = (True, d.get('display_id'))
                     else:
                         error = (False, '')
@@ -454,7 +469,7 @@ class homolog_finder():
                                                                                                                   colx=2),
                                                                                                               error[1]))
 
-            if error[0] == None:
+            if error[0] is None:
                 print('Warning in row {0}: No Uniprot ID found'.format(i + 1))
 
 
@@ -604,8 +619,9 @@ class homolog_finder():
             self.uniprot_genename[uniprot] = None
             filename = 'uniprot/id_{}.txt'.format(uniprot)
             if not os.path.isfile(filename):
-                r = requests.get('{0}:{1}&columns=id,entry%20name,genes&format=json'.format(self.urls['id'],
-                                                                                        uniprot))
+                r = requests.get('{0}:{1}&columns=id,entry name,genes&format=json'.format(self.urls['id'],
+                                                                                          uniprot))
+
 
                 if r.status_code == 200:
                     with open(filename, 'w') as f:
@@ -1086,7 +1102,7 @@ class homolog_gene():
                                      hmmer=dict(weight=1)),
                         homolog_finder=None):
         values = (False, None, True)
-        if self.score == None:
+        if self.score is None:
             #brain
             if self.expressed_in_brain in values:
                 self.score = weights['brain']['values'][values.index(self.expressed_in_brain)]
@@ -1118,7 +1134,7 @@ class homolog_gene():
                     reference = str(record.seq)
                     if '_' in reference:
                         print('argh, damm it')
-                        asdfk
+                        assert True == False, 'breaking here'
                 elif self.uniprot_id in record.id:
                     #print(record.id, record.seq)
                     for pos, aa in enumerate(str(record.seq)):
@@ -1128,33 +1144,6 @@ class homolog_gene():
         self.alignment_score = score
         return score
 
-#new_homolog_finder = homolog_finder(xls_filename='57_top_candidates_No1.xlsx')
-new_homolog_finder = homolog_finder(xls_filename='57_top_candidates.xlsx')
-#for k in new_homolog_finder.homologs.keys():
-#    pass
-
-
-
-values = dict()
-for i in range(1, 10):
-    values[str(i)] = i
-values['-'] = 0
-values['.'] = 0
-values['*'] = 10
-
-#for i in range(1, len(alignment)):
-#    print(alignment[i].letter_annotations['posterior_probability'].count('*') / len(alignment[0].seq))
-
-k = list(new_homolog_finder.homologs.keys())[0]
-print(new_homolog_finder.homologs[k][0])
-
-new_homolog_finder.calculate_scores()
-new_homolog_finder.get_disease_statistics()
-
-for homo in new_homolog_finder.homologs:
-    for x in new_homolog_finder.homologs[homo]:
-        if x.disgenet and x.disgenet.get('diseases'):
-            print(x)
 
 
 def report(homolog_finder, disease_threshold=[0, 10**6]):
@@ -1164,6 +1153,37 @@ def report(homolog_finder, disease_threshold=[0, 10**6]):
             if isinstance(disease_threshold, list):
                 if x.disgenet.get('diseases')in disease_threshold:
                     print('{}\t{}\t{}\{}'.format(x.primary.wormbase_name, x.name, '\n\t\t'.join(list(set([dd['disease'] for dd in x.disgenet.get('diseases')]))), homologs.x.expressed_in_brain))
-            elif disease_threshold == None:
+            elif disease_threshold is None:
                 if not x.disgenet.get('diseases'):
                     print('{}\\t{}\{}'.format(x.primary.wormbase_name, x.name, homologs.x.expressed_in_brain))
+
+
+if __name__ == '__main__':
+    
+    if len(sys.argv) == 1:
+        print('usage: homologys.py yourfilename.xlsx')
+        sys.exit(1)
+    new_homolog_finder = homolog_finder(xls_filename=sys.argv[1])
+    # for k in new_homolog_finder.homologs.keys():
+    #    pass
+
+    values = dict()
+    for i in range(1, 10):
+        values[str(i)] = i
+    values['-'] = 0
+    values['.'] = 0
+    values['*'] = 10
+
+    # for i in range(1, len(alignment)):
+    #    print(alignment[i].letter_annotations['posterior_probability'].count('*') / len(alignment[0].seq))
+
+    k = list(new_homolog_finder.homologs.keys())[0]
+    print(new_homolog_finder.homologs[k][0])
+
+    new_homolog_finder.calculate_scores()
+    new_homolog_finder.get_disease_statistics()
+
+    for homo in new_homolog_finder.homologs:
+        for x in new_homolog_finder.homologs[homo]:
+            if x.disgenet and x.disgenet.get('diseases'):
+                print(x)
