@@ -7,7 +7,9 @@ import json
 import pprint
 import time
 import jinja2
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 import xml.etree.ElementTree as ET
 import pronto
 import argparse
@@ -15,15 +17,15 @@ from HomologGene import HomologGene
 from PrimaryGene import PrimaryGene
 
 
-class HomologFinder():
+class HomologFinder:
     def __init__(self, xls_filename='',
-                 urlUniprotId='http://www.uniprot.org/uniprot/?query=id',
-                 urlCompara='https://rest.ensembl.org/homology/symbol/caenorhabditis_elegans/',
-                 urlBrain='http://api.brain-map.org/api/v2/data/query.json?criteria=',
-                 urlWormbase='http://www.wormbase.org/rest/widget',
-                 urlOverlap='http://rest.ensembl.org/overlap',
-                 urlUniprot='http://www.uniprot.org/uniprot',
-                 urlDisgenet='http://www.disgenet.org/oql',
+                 url_uniprot_id='http://www.uniprot.org/uniprot/?query=id',
+                 url_compara='https://rest.ensembl.org/homology/symbol/caenorhabditis_elegans/',
+                 url_brain='http://api.brain-map.org/api/v2/data/query.json?criteria=',
+                 url_wormbase='http://www.wormbase.org/rest/widget',
+                 url_overlap='http://rest.ensembl.org/overlap',
+                 url_uniprot='http://www.uniprot.org/uniprot',
+                 url_disgenet='http://www.disgenet.org/oql',
                  main_folder='',
                  wormbase_name_column=4,
                  wormbase_id_column=2,
@@ -32,49 +34,46 @@ class HomologFinder():
                  jackhmmer='jackhmmer',
                  disease_ontology_filename='HumanDO.obo'):
         self.xls_filename = xls_filename
-        self.urls = dict()
-        self.urls['xrefs'] = 'http://rest.ensembl.org/xrefs/id'
-        self.urls['id'] = urlUniprotId
-        self.urls['compara'] = urlCompara
-        self.urls['brain'] = urlBrain
-        self.urls['wormbase'] = urlWormbase
-        self.urls['overlap'] = urlOverlap
-        self.urls['uniprot'] = urlUniprot
-        self.urls['disgenet'] = urlDisgenet
+        self.urls = {'xrefs': 'http://rest.ensembl.org/xrefs/id',
+                     'id': url_uniprot_id,
+                     'compara': url_compara,
+                     'brain': url_brain,
+                     'wormbase': url_wormbase,
+                     'overlap': url_overlap,
+                     'uniprot': url_uniprot,
+                     'disgenet': url_disgenet}
         self.required_folders = ['brain', 'compara', 'wormbase_protein', 'aliases', 'disgenet',
                                  'uniprot', 'jackhmmer', 'fasta']
         self.main_folder = main_folder
-        self.disgenet = dict() #stores all the gene to disease assocations
-        self.disgenet_raw = dict() #stores all raw data from disgenet
-        self.disgenet = dict() #stores parsed data from disgenet
-        self.gene_ids = list() #stores a list of gene IDs for which homologs are searched
-        self.uniprot_ids = list() #tores a list of UniProt IDs for which homologs are searched
+        self.disgenet = {}  # stores all the gene to disease assocations
+        self.disgenet_raw = {}  # stores all raw data from disgenet
+        self.disgenet = {}  # stores parsed data from disgenet
+        self.gene_ids = []  # stores a list of gene IDs for which homologs are searched
+        self.uniprot_ids = []  # stores a list of UniProt IDs for which homologs are searched
         self.initialize_folders()
-        self.primary_genes = list()
-        self.homolog_gene = list()
-        self.homologs = dict() #key: Uniprot ID or gene name, value: a list of homolog object
-        self.sprot_database = sprot_database #location of the SwissProt database for HMMER
-        self.jackhmmer = jackhmmer #location of the jackhmmer executable
-        self.uniprot_genename = dict() #key: UniProt ID, value: Gene name
-        self.expressed_in_brain = dict() #key: gene name, value: boolean (expressed in brain or not)
-        self.wormbase_names = list() #a list of wormbase names
-        self.neuro_diseases = list() #a list of all diseases associated with brain or nerves
-        self.disease_synonyms = dict() #a dict with synonyms for neuro_diseases, key: a disease ontology entry, value: the corresponding MESH value
-        self.disease_ontology_filename = disease_ontology_filename #the filename where the human disease ontology is stored
-        self.uniprot_info = dict() #stores info about Uniprot entries which were retrieved, key: Uniprot ID, value: a dict with information
-        self.disgenet_map = None #a placeholder for a dict, key: UniProtID, value: GeneID
-        self.disgenet_map_filename ='mapa_geneid_4_uniprot_crossref.tsv'
-        self.diseases = None #a placeholder for a list with all diseases
-        self.disease_stats = None #a placeholder for a dict with all disease statistics
-        self.alignments = dict() #a dict storing all the alignment objects, needed for performance
-
+        self.primary_genes = []
+        self.homolog_gene = []
+        self.homologs = {}  # key: Uniprot ID or gene name, value: a list of homolog object
+        self.sprot_database = sprot_database  # location of the SwissProt database for HMMER
+        self.jackhmmer = jackhmmer  # location of the jackhmmer executable
+        self.uniprot_genename = {}  # key: UniProt ID, value: Gene name
+        self.expressed_in_brain = {}  # key: gene name, value: boolean (expressed in brain or not)
+        self.wormbase_names = []  # a list of wormbase names
+        self.neuro_diseases = []  # a list of all diseases associated with brain or nerves
+        self.disease_synonyms = {}  # a dict with synonyms for neuro_diseases, key: a disease ontology entry, value: the corresponding MESH value
+        self.disease_ontology_filename = disease_ontology_filename  # the filename where the human disease ontology is stored
+        self.uniprot_info = {}  # stores info about Uniprot entries which were retrieved, key: Uniprot ID, value: a dict with information
+        self.disgenet_map = None  # a placeholder for a dict, key: UniProtID, value: GeneID
+        self.disgenet_map_filename = 'mapa_geneid_4_uniprot_crossref.tsv'
+        self.diseases = None  # a placeholder for a list with all diseases
+        self.disease_stats = None  # a placeholder for a dict with all disease statistics
+        self.alignments = {}  # a dict storing all the alignment objects, needed for performance
+        self.human_homologs = {}
         
         if xls_filename:
-            #if a xls filename is specified, read all the data
-            #initalize primary genes for all entries and find possible homologs
+            # if a xls filename is specified, read all the data
+            # initalize primary genes for all entries and find possible homologs
             self.workbook = xlrd.open_workbook(self.xls_filename)
-            #if not self.validate_inputfile():
-            #    sys.exit(1)
             self.get_genes_from_xls_file(wormbase_id_column)
             self.gene_ids = self.get_ids_from_xls_file(wormbase_id_column)
             self.uniprot_ids = self.get_ids_from_xls_file(uniprot_id_column)
@@ -87,14 +86,13 @@ class HomologFinder():
         else:
             self.workbook = None
 
-
-            #parse and store the disease ontology
+        # parse and store the disease ontology
         if self.disease_ontology_filename:
             self.onto = pronto.Ontology(self.disease_ontology_filename)
             # self.disease_parents =
             # parents = [self.onto['DOID:150'], self.onto['DOID:863']] #mental and nerve diseases
             self.disease_parents = [self.onto['DOID:9120'], self.onto['DOID:1289']]  # amyloidosis and neurodegenerative diseases
-            #self.disease_parents = [self.onto['DOID:9120']]  # amyloidosis
+            # self.disease_parents = [self.onto['DOID:9120']]  # amyloidosis
             # self.disease_parents = [self.onto['DOID:1289']]  #neurodegenerative diseases
 
             for parent in self.disease_parents:
@@ -118,7 +116,6 @@ class HomologFinder():
         :return: 
         """
 
-
         for primary_gene in self.homologs:
             for homolog in self.homologs[primary_gene]:
                 homolog.calculate_score(homolog_finder=self)
@@ -134,7 +131,7 @@ class HomologFinder():
             return self.diseases
         self.calculate_scores()
         self.get_human_homologs(verbose=False)
-        diseases = list()
+        diseases = []
         for primary_gene in self.human_homologs:
             for homolog in self.human_homologs[primary_gene]:
                 if homolog.disgenet.get('diseases'):
@@ -151,7 +148,7 @@ class HomologFinder():
         if self.disease_stats:
             return self.disease_stats
         self.get_human_homologs(verbose=False)
-        disease_stats = dict()
+        disease_stats = {}
         for primary_gene in self.human_homologs:
             disease_stats[primary_gene] = 0
             for homolog in self.human_homologs[primary_gene]:
@@ -171,7 +168,7 @@ class HomologFinder():
 
         :return:
         """
-        expressed = list()
+        expressed = []
         for homolog in self.get_homologs():
             homolog.calculate_score()
             self.expressed_in_brain[homolog.name] = homolog.expressed_in_brain
@@ -198,12 +195,12 @@ class HomologFinder():
         :return: 
         """
 
-        self.human_homologs = dict()
+        self.human_homologs = {}
         for primary_gene in self.homologs:
             if verbose:
                 print('#' * 40)
                 print('Primary gene: {}'.format(primary_gene))
-            self.human_homologs[primary_gene] = list()
+            self.human_homologs[primary_gene] = []
             for homolog in self.homologs[primary_gene]:
                 if 'homo' in homolog.organism.lower() or 'human' in homolog.organism.lower():
                     self.human_homologs[primary_gene].append(homolog)
@@ -211,15 +208,13 @@ class HomologFinder():
                         print(homolog)
                         print('=' * 20)
 
-        counter = dict()
-        counter['no homolog'] = 0
-        counter['potential homolog'] = 0
-        counter['total'] = 0
+        counter = {'no homolog': 0,
+                   'potential homolog': 0,
+                   'total': 0}
         for primary_gene in self.human_homologs:
             if verbose:
                 print('Primary gene {} has {} potential homologs'.format(primary_gene,
-                                                                         len(self.human_homologs[primary_gene])
-                                                                         )
+                                                                         len(self.human_homologs[primary_gene]))
                       )
             if len(self.human_homologs[primary_gene]) > 0:
                 counter['potential homolog'] += 1
@@ -249,7 +244,6 @@ class HomologFinder():
 
         return expression
 
-
     def get_info_from_uniprot(self, uniprot_id):
         """
         retrieves information from Uniprot and stores it in uniprot_info attribute
@@ -257,11 +251,11 @@ class HomologFinder():
         :return: a dictionary with attributes
         """
 
-        attributes = dict()
-        attributes['organism'] = ''
-        attributes['fullname'] = ''
-        attributes['sequence'] = ''
-        attributes['gene_id'] = ''
+        attributes = {'organism': '',
+                      'fullname': '',
+                      'sequence': '',
+                      'gene_id': ''}
+
         filename = 'uniprot/{}.xml'.format(uniprot_id)
         if not os.path.isfile(filename):
             r = requests.get('{0}/{1}.xml'.format(self.urls['uniprot'], uniprot_id))
@@ -269,33 +263,30 @@ class HomologFinder():
                 if r.status_code == 200:
                     f.write(r.text)
                 else:
-                    #create the file but leave it empty
+                    # create the file but leave it empty
                     print('Error retrieving Uniprot {}'.format(uniprot_id))
                     return attributes
 
-        #with open(filename, 'r') as f:
-        #    uniprot_xml = f.read()
         try:
             root = ET.parse(filename).getroot()
-        except:
+        except ET.ParseError:
             print('could not get root for UniProt ID: {}'.format(uniprot_id))
             return attributes
         entries = [node for node in root.getchildren() if 'entry' in node.tag]
         if len(entries) != 1:
             print('malformed XML for UniProt ID: {}\nexpected 1 entry'.format(uniprot_id))
 
-
         organism_root = [node for node in entries[0].getchildren() if node.tag.endswith('organism')]
         if len(organism_root) != 1:
             print('malformed XML for UniProt ID: {}\nexpected 1 organism'.format(uniprot_id))
         else:
             organism = [node for node in organism_root[0].getchildren() if
-                    (node.tag.endswith('name') and node.attrib.get('type') == 'common')]
+                        (node.tag.endswith('name') and node.attrib.get('type') == 'common')]
             if len(organism) == 1:
                 attributes['organism'] = organism[0].text
             else:
                 organism = [node for node in organism_root[0].getchildren() if
-                        (node.tag.endswith('name') and node.attrib.get('type') == 'scientific')]
+                            (node.tag.endswith('name') and node.attrib.get('type') == 'scientific')]
                 if len(organism) == 1:
                     attributes['organism'] = organism[0].text
                 else:
@@ -307,37 +298,35 @@ class HomologFinder():
         else:
             attributes['sequence'] = seq[0].text.strip().replace('\n', '')
 
-
         protein = [node for node in root[0].getchildren() if node.tag.endswith('protein')]
         if len(protein) != 1:
             print('malformed XML for UniProt ID: {}\nexptected 1 protein'.format(uniprot_id))
             attributes['fullname'] = ''
         else:
-            submittedName = [node for node in protein[0].getchildren() if node.tag.endswith('submittedName')]
-            if len(submittedName) != 1:
-                submittedName = [node for node in protein[0].getchildren() if node.tag.endswith('recommendedName')]
-            if len(submittedName) != 1:
+            submitted_name = [node for node in protein[0].getchildren() if node.tag.endswith('submittedName')]
+            if len(submitted_name) != 1:
+                submitted_name = [node for node in protein[0].getchildren() if node.tag.endswith('recommendedName')]
+            if len(submitted_name) != 1:
                 print('malformed XML for UniProt ID: {}\nexpected 1 submittedName or recommendedName'.format(uniprot_id))
             else:
-                attributes['fullname'] = submittedName[0].getchildren()[0].text
+                attributes['fullname'] = submitted_name[0].getchildren()[0].text
 
         gene_id_root = [node for node in entries[0].getchildren() if node.tag.endswith('gene')]
         gene_found = False
         if len(gene_id_root) != 1:
-            #print('malformed XML for UniProt ID: {}\nexpected 1 gene\nTrying via API'.format(uniprot_id))
+            # print('malformed XML for UniProt ID: {}\nexpected 1 gene\nTrying via API'.format(uniprot_id))
             pass
         else:
-            #print(gene_id_root)
             gene_id = [node for node in gene_id_root[0].getchildren() if
                        (node.tag.endswith('name') and node.attrib.get('type') == 'primary')]
             if len(gene_id) == 1:
                 gene_found = True
                 attributes['gene_id'] = gene_id[0].text
         if not gene_found:
-            #print('Could not find GeneName in XML for UniProt ID: {}\nTrying via API'.format(uniprot_id))
             attributes['gene_id'] = self.uniprot_to_genename(uniprot_id)
 
         return attributes
+
     def find_homologs(self):
         for ii, gene in enumerate(self.gene_ids):
             self.primary_genes.append(PrimaryGene(uniprot_id=self.uniprot_ids[ii],
@@ -345,10 +334,6 @@ class HomologFinder():
                                                   homolog_finder=self,
                                                   wormbase_name=self.wormbase_names[ii]))
             self.primary_genes[-1].find_homologs()
-        #self.calculate_scores()
-        #self.get_diseases_for_genes()
-        #self.calculate_scores()
-        #self.get_disease_statistics()
 
         for primary in self.primary_genes:
             for uniprot in primary.uniprot_ids_from_hmmer:
@@ -359,7 +344,6 @@ class HomologFinder():
                 self.create_homolog(primary,
                                     gene_name=compara,
                                     source='compara')
-            #self.create_homolog_html(primary)
 
     def get_homolog(self, uniprot_id):
         return self.homologs.get(uniprot_id)
@@ -372,7 +356,10 @@ class HomologFinder():
                        double_check=True):
         """
         
-        :param primary: 
+        :param primary:
+        :param gene_name:
+        :param uniprot:
+        :param source:
         :param double_check: 
         :return: 
         """
@@ -389,7 +376,7 @@ class HomologFinder():
                                   homolog_finder=self,
                                   jackhmmer_files=primary.jackhmmer_filename)
         if not self.homologs.get(primary.wormbase_name):
-            self.homologs[primary.wormbase_name] = list()
+            self.homologs[primary.wormbase_name] = []
         self.homologs[primary.wormbase_name].append(new_homolog)
 
     def initialize_folders(self):
@@ -399,9 +386,9 @@ class HomologFinder():
         """
 
         for folder in self.required_folders:
-            joinedFolder = os.path.join(folder, self.main_folder)
-            if not os.path.isdir(joinedFolder):
-                os.makedirs(joinedFolder)
+            joined_folder = os.path.join(folder, self.main_folder)
+            if not os.path.isdir(joined_folder):
+                os.makedirs(joined_folder)
 
     def validate_inputfile(self):
         """
@@ -421,7 +408,7 @@ class HomologFinder():
                 data = json.loads(r.text)
             else:
                 print('error retrieving data for {0}'.format(wb_gene))
-                data = list()
+                data = []
             # UniProt check
             for d in data:
                 if 'UniProt' in d.get('db_display_name'):
@@ -457,7 +444,6 @@ class HomologFinder():
 
             if error[0] is None:
                 print('Warning in row {0}: No Uniprot ID found'.format(i + 1))
-
 
             # let's check if the gene matches the ID, UniProt and name
 
@@ -508,21 +494,13 @@ class HomologFinder():
     def create_homolog_html(self, primary, only_human=True):
         """
         
-        :param primary: 
+        :param primary:
+        :param only_human
         :return: 
         """
-        input_dict = dict()
-        input_dict['primary'] = primary.wormbase_name
-        input_dict['homologs'] = self.homologs[primary.wormbase_name]
-        table = list()
-        table.append(list())
-        table[0].append('Uniprot ID')
-        table[0].append('Name')
-        table[0].append('Expressed in brain')
-        table[0].append('Alignment')
-        table[0].append('Diseases')
-        table[0].append('Alignment length [%]')
-        table[0].append('Total Score')
+
+        table.append([['Uniprot ID', 'Name', 'Expressed in brain', 'Alignment',
+                       'Diseases', 'Alignment length [%]', 'Total Score']])
         filename = 'jackhmmer_{}.aln'.format(primary.uniprot_id)
         for homolog in self.homologs[primary.wormbase_name]:
             if only_human and ('human' not in homolog.organism.lower() and 'homo' not in homolog.organism.lower()):
@@ -549,7 +527,6 @@ class HomologFinder():
             f.write(result)
         self.alignment(filename)
 
-
     def alignment(self, filename='align.txt'):
         """
         Creates an alignment file from an alignment, only human sequences are used
@@ -557,7 +534,7 @@ class HomologFinder():
         :return: None
         """
         alignment = AlignIO.read(filename, "stockholm")
-        items = list()
+        items = []
         for i, a in enumerate(alignment):
             if 'HUMAN' in a.id or i == 0:
                 items.append({'id': a.id, 'sequence': str(a.seq)})
@@ -567,12 +544,11 @@ class HomologFinder():
         with open('{}.html'.format(filename), 'w') as f:
             f.write(result)
 
-
     def hmmer_to_table(self, filename='h.txt'):
 
-        #the location of the individual rows
+        # the location of the individual rows
         ranges = [(0, 22), (22, 33), (33, 56), (56, 66), (67, 76), (77, 83), (84, 89), (90, 99), (100, 106), (107, 112), (114, 118), (118, 122), (122, 126), (126, 130), (130, 134), (134, 138), (138, 142), (142, 146), (146, 10**3)]
-        lines = list()
+        lines = []
         header = 0
         with open(filename, 'r') as f:
             for line in f:
@@ -593,7 +569,6 @@ class HomologFinder():
         with open('table.html', 'w') as f:
             f.write(result)
 
-
     def uniprot_to_genename_json(self, uniprot):
         """
         gets the gene name for a UniProt identifier
@@ -607,7 +582,6 @@ class HomologFinder():
             if not os.path.isfile(filename):
                 r = requests.get('{0}:{1}&columns=id,entry name,genes&format=json'.format(self.urls['id'],
                                                                                           uniprot))
-
 
                 if r.status_code == 200:
                     with open(filename, 'w') as f:
@@ -625,14 +599,12 @@ class HomologFinder():
         :param uniprot: a UniProt identifier
         :return: a gene name, in case of multiple gene names only the first is returned
         """
-
+        filename = 'uniprot/id_{}.tsv'.format(uniprot)
         if not self.uniprot_genename.get(uniprot):
             self.uniprot_genename[uniprot] = None
-            filename = 'uniprot/id_{}.tsv'.format(uniprot)
             if not os.path.isfile(filename):
                 r = requests.get('{0}:{1}&columns=id,entry name,genes&format=tab'.format(self.urls['id'],
                                                                                          uniprot))
-
 
                 if r.status_code == 200:
                     with open(filename, 'w') as f:
@@ -657,7 +629,6 @@ class HomologFinder():
         for gene in self.get_homologs():
             self.get_disease_for_gene(gene.gene_name)
 
-
     def get_disease_for_gene(self, gene):
         """
         
@@ -665,7 +636,6 @@ class HomologFinder():
         :return: 
         """
         pass
-
 
     def read_disgenet_map(self):
         """
@@ -676,20 +646,19 @@ class HomologFinder():
         with open(self.disgenet_map_filename, 'r') as f:
             lines = f.read().splitlines()
 
-        self.disgenet_map = dict()
+        self.disgenet_map = {}
         for line in lines:
             cells = line.split('\t')
             self.disgenet_map[cells[0]] = cells[1]
 
         return None
 
-
     def get_diseases_from_disgenet(self, uniprot_id, filename='', overwrite=False):
         """
-
-        inspired by:
         http://www.disgenet.org/ds/DisGeNET/scripts/disgenet_python3.py
-        :param gene:
+        :param uniprot_id:
+        :param filename:
+        :param overwrite:
         :return:
         """
 
@@ -742,6 +711,7 @@ class HomologFinder():
         """
 
         :param uniprot_id: The uniprot ID for which associated diseases should be found
+        :param overwrite: bool, whether to use and create cached files
         :return:
         """
         if self.disgenet.get(uniprot_id) is None or overwrite:
@@ -758,7 +728,7 @@ class HomologFinder():
         :param data: a result string from a DisGenet query 
         :return: all lines which are associated with nerve disease, taken from self.neuro_diseases
         """
-        filtered_diseases = list()
+        filtered_diseases = []
         if not data:
             return filtered_diseases
 
@@ -771,7 +741,6 @@ class HomologFinder():
                 filtered_diseases.append(line)
             if self.disease_synonyms.get('OMIM:{}'.format(cells[5])):
                 filtered_diseases.append(line)
-        #print(filtered_diseases)
         return filtered_diseases
 
     def parse_disgenet(self, data):
@@ -781,9 +750,8 @@ class HomologFinder():
         :return: 
         """
 
-        parsed_values = dict()
-        parsed_values['total score'] = 0
-        parsed_values['diseases'] = list()
+        parsed_values = {'total score': 0,
+                         'diseases': []}
         for line in data:
             cells = line.split('\t')
             parsed_values['total score'] += float(cells[14])
@@ -797,10 +765,10 @@ def report(homolog_finder, disease_threshold=[0, 10**6]):
         for x in homolog_finder.homologs[homo]:
             if isinstance(disease_threshold, list):
                 if x.disgenet.get('diseases')in disease_threshold:
-                    print('{}\t{}\t{}\{}'.format(x.primary.wormbase_name, x.name, '\n\t\t'.join(list(set([dd['disease'] for dd in x.disgenet.get('diseases')]))), homologs.x.expressed_in_brain))
+                    print('{}\t{}\t{}\t{}'.format(x.primary.wormbase_name, x.name, '\n\t\t'.join(list(set([dd['disease'] for dd in x.disgenet.get('diseases')]))), homologs.x.expressed_in_brain))
             elif disease_threshold is None:
                 if not x.disgenet.get('diseases'):
-                    print('{}\\t{}\{}'.format(x.primary.wormbase_name, x.name, homologs.x.expressed_in_brain))
+                    print('{}\\t{}\t{}'.format(x.primary.wormbase_name, x.name, homologs.x.expressed_in_brain))
 
 
 def parse_args(args):
@@ -817,11 +785,11 @@ def parse_args(args):
 
 def validate_args(args):
     if not os.path.isfile(args.input_filename):
-        return (False, 'Input Excel file is missing')
+        return False, 'Input Excel file is missing'
     if not os.path.isfile(args.jackhmmer) or not os.access(args.jackhmmer, os.X_OK):
-        return (False, 'jackHMMER executable is not found not or cannot be executed')
+        return False, 'jackHMMER executable is not found not or cannot be executed'
     if not os.path.isfile(args.uniprot):
-        return (False, 'UniProt Swiss-Pro FASTA file is missing')
+        return False, 'UniProt Swiss-Pro FASTA file is missing'
 
     return True, ''
 
@@ -833,7 +801,7 @@ if __name__ == '__main__':
         print(validate_args(args)[1])
         sys.exit(1)
     homolog_finder = HomologFinder(xls_filename=args.input_filename,
-                                       jackhmmer=args.jackhmmer)
+                                   jackhmmer=args.jackhmmer)
 
     for i in range(len(homolog_finder.homologs.keys())):
         k = list(homolog_finder.homologs.keys())[i]

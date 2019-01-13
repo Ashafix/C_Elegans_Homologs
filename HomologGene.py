@@ -5,7 +5,7 @@ import requests
 from Bio import AlignIO
 
 
-class HomologGene():
+class HomologGene:
     """
     stores all the information about homologs
     """
@@ -34,10 +34,11 @@ class HomologGene():
         self.organism = organism
         self.sequence = sequence
         self.disgenet = None  # a placeholder for info from disgenet
+        self.alignment_score = None
         if isinstance(jackhmmer_files, list):
             self.jackhmmer_files = jackhmmer_files
         else:
-            self.jackhmmer_files = list()
+            self.jackhmmer_files = []
             self.jackhmmer_files.append(jackhmmer_files)
 
         self.jackhmmer_ids = jackhmmer_ids
@@ -80,13 +81,13 @@ class HomologGene():
             if jackhmmer_file not in self.jackhmmer_files:
                 self.jackhmmer_files.append(jackhmmer_file)
         if jackhmmer_ids:
-            if type(jackhmmer_ids) != list:
+            if not isinstance(jackhmmer_ids, list):
                 jackhmmer_ids = [jackhmmer_ids]
             for jackhmmer_id in jackhmmer_ids:
                 if jackhmmer_id not in self.jackhmmer_ids:
                     self.jackhmmer_ids.append(jackhmmer_id)
         if compara:
-            if type(compara) != list:
+            if not isinstance(compara, list):
                 compara = list(compara)
             for comp in compara:
                 if comp not in self.compara:
@@ -107,7 +108,7 @@ class HomologGene():
         gene = gene.upper()
         exp_max = 0
         exp_avg = 0
-        probes = list()
+        probes = []
 
         filename = 'brain/{0}_probes.txt'.format(gene.replace('/', '_'))
         if os.path.isfile(filename):
@@ -131,7 +132,7 @@ class HomologGene():
             with open(filename, 'r') as f:
                 try:
                     probes = json.load(f)
-                except:
+                except json.JSONDecodeError:
                     return None
         else:
             r = requests.get(

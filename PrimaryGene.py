@@ -9,7 +9,7 @@ import requests
 beautifulSoup = functools.partial(BeautifulSoup, features='lxml')
 
 
-class PrimaryGene():
+class PrimaryGene:
     def __init__(self,
                  uniprot_id='',
                  wormbase_id='',
@@ -23,13 +23,13 @@ class PrimaryGene():
         self.protein_name = protein_name
         self.uniprot_id = uniprot_id
         self.homolog_finder = homolog_finder  # the outer homolog_finder object which stores all the settings
-        self.homologs = list()  # stores a list of homolog objects
-        self.compara = list()  # stores the info from compara database
+        self.homologs = []  # stores a list of homolog objects
+        self.compara = []  # stores the info from compara database
         self.overwrite = False  # whether to overwrite existing data or not
         self.jackhmmer_filename = ''  # the filename where the jackhmmer output is located
         self.wormbase_homologs = ''
         self.overwrite = overwrite
-        self.uniprot_ids_from_hmmer = list()
+        self.uniprot_ids_from_hmmer = []
         if homolog_finder and uniprot_id:
             self.gene_id = homolog_finder.uniprot_to_genename(uniprot_id)
         else:
@@ -69,15 +69,15 @@ class PrimaryGene():
         :return: a list of IDs in order of appearance
         """
 
-        ids = list()
+        ids = []
         if not os.path.isfile(self.jackhmmer_filename):
-            self.uniprot_ids_from_hmmer = list()
+            self.uniprot_ids_from_hmmer = []
             return False
 
         with open(self.jackhmmer_filename, 'r') as f:
             lines = f.read().splitlines()
         if not lines[0].startswith('# STOCKHOLM'):
-            self.uniprot_ids_from_hmmer = list()
+            self.uniprot_ids_from_hmmer = []
             return False
 
         for line in lines:
@@ -108,7 +108,7 @@ class PrimaryGene():
                 data = f.read()
 
         j = json.loads(data)
-        if not 'error' in j.keys() and len(j['data']) > 0:
+        if 'error' not in j.keys() and len(j['data']) > 0:
             for i in range(len(j['data'][0]['homologies'])):
                 self.compara.append(j['data'][0]['homologies'][i]['target']['id'])
 
