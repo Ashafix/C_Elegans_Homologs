@@ -1,3 +1,10 @@
+import sys
+import os
+import json
+import subprocess
+from bs4 import BeautifulSoup
+
+
 class PrimaryGene():
     def __init__(self,
                  uniprot_id='',
@@ -65,14 +72,15 @@ class PrimaryGene():
             return False
 
         with open(self.jackhmmer_filename, 'r') as f:
-            lines = f.read().split('\n')
+            lines = f.read().splitlines()
+        print(self.jackhmmer_filename)
+        print(lines)
         if not lines[0].startswith('# STOCKHOLM'):
             self.uniprot_ids_from_hmmer = list()
             return False
 
-        orig_id = lines[1].split('|')[1]
-        for line in lines[3:]:
-            if line.startswith('#'):
+        for line in lines:
+            if line.startswith('#=GR'):
                 id = line.split('|')[1]
                 if id not in ids:
                     ids.append(id)
@@ -118,7 +126,7 @@ class PrimaryGene():
 
         filename = 'wormbase_protein/{0}_protein.html'.format(self.wormbase_id)
         if not os.path.isfile(filename):
-            soup = bs4.BeautifulSoup(data)
+            soup = BeautifulSoup(data)
             links = soup.find_all('a', {'class': 'protein-link'})
             if links:
                 r = requests.get(
@@ -132,7 +140,7 @@ class PrimaryGene():
         else:
             with open(filename, 'r') as f:
                 data = f.read()
-        soup = bs4.BeautifulSoup(data)
+        soup = BeautifulSoup(data)
         links = soup.find_all('a', {'class': 'protein-link'})
         if links:
             self.wormbase_homologs = [links[0].get('href').split(':')[-1], links[0].text]

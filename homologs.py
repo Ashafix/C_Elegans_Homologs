@@ -5,9 +5,7 @@ import re
 import requests
 import json
 import pprint
-import bs4
 import time
-import subprocess
 from Bio import AlignIO
 import jinja2
 import urllib.request, urllib.error, urllib.parse
@@ -839,7 +837,6 @@ def parse_args(args):
 if __name__ == '__main__':
     
     args = parse_args(sys.argv[1:])
-    print(args)
     new_homolog_finder = homolog_finder(xls_filename=args.input_filename,
                                         jackhmmer=args.jackhmmer)
     # for k in new_homolog_finder.homologs.keys():

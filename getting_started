@@ -1,0 +1,8 @@
+Download JackHHMER
+http://hmmer.org/download.html
+
+Compile JackHHMER
+
+Download UniProt Swiss-Prot Fasta
+ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
+unzip it
