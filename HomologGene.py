@@ -1,3 +1,10 @@
+import sys
+import os
+import json
+import requests
+from Bio import AlignIO
+
+
 class HomologGene():
     """
     stores all the information about homologs
@@ -16,8 +23,7 @@ class HomologGene():
                  description='',  # description, taken from UniProt
                  name='',  # human readable name of the homolog
                  organism='',
-                 sequence=''
-                 ):
+                 sequence=''):
         self.primary = primary
         self.uniprot_id = uniprot_id
         self.score = score
@@ -28,7 +34,7 @@ class HomologGene():
         self.organism = organism
         self.sequence = sequence
         self.disgenet = None  # a place holder for info from disgenet
-        if type(jackhmmer_files) == list:
+        if isinstance(jackhmmer_files, list):
             self.jackhmmer_files = jackhmmer_files
         else:
             self.jackhmmer_files = list()

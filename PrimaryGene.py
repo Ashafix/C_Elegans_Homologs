@@ -1,8 +1,12 @@
 import sys
 import os
+import functools
 import json
 import subprocess
 from bs4 import BeautifulSoup
+import requests
+
+beautifulSoup = functools.partial(BeautifulSoup, features='lxml')
 
 
 class PrimaryGene():
@@ -39,13 +43,13 @@ class PrimaryGene():
 
     def run_jackhmmer(self):
         """
-
-        :return:
+        Starts the jackhmmer executable and stores the output
+        :return: None
         """
-        filename = '{0}.fasta'.format(self.uniprot_id)
-        jackhmmer_output = 'jackhmmer_{0}.aln'.format(self.uniprot_id)
+        filename = os.path.join('fasta', '{0}.fasta'.format(self.uniprot_id))
+        jackhmmer_output = 'jackhmmer/jackhmmer_{0}.aln'.format(self.uniprot_id)
 
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or self.overwrite:
             r = requests.get('{0}/{1}.fasta'.format(self.homolog_finder.urls['uniprot'], self.uniprot_id))
             with open(filename, 'w') as f:
                 f.write(r.text)
@@ -66,15 +70,12 @@ class PrimaryGene():
         """
 
         ids = list()
-        print(self.jackhmmer_filename)
         if not os.path.isfile(self.jackhmmer_filename):
             self.uniprot_ids_from_hmmer = list()
             return False
 
         with open(self.jackhmmer_filename, 'r') as f:
             lines = f.read().splitlines()
-        print(self.jackhmmer_filename)
-        print(lines)
         if not lines[0].startswith('# STOCKHOLM'):
             self.uniprot_ids_from_hmmer = list()
             return False
@@ -89,8 +90,10 @@ class PrimaryGene():
         self.uniprot_ids_from_hmmer = ids
         return True
 
-    def get_homologs_from_compara(self,
-                                  species='homo_sapiens'):
+    def get_homologs_from_compara(self, species='homo_sapiens'):
+        """
+
+        """
         filename = 'compara/{0}_{1}.txt'.format(species, self.wormbase_id)
         if not os.path.isfile(filename):
             r = requests.get(
@@ -101,7 +104,6 @@ class PrimaryGene():
             with open(filename, 'w') as f:
                 f.write(data)
         else:
-            # print(filename)
             with open(filename, 'r') as f:
                 data = f.read()
 
@@ -111,6 +113,9 @@ class PrimaryGene():
                 self.compara.append(j['data'][0]['homologies'][i]['target']['id'])
 
     def get_info_from_wormbase(self):
+        """
+
+        """
         filename = 'wormbase_protein/{0}.html'.format(self.wormbase_id)
 
         if not os.path.isfile(filename):
@@ -126,7 +131,7 @@ class PrimaryGene():
 
         filename = 'wormbase_protein/{0}_protein.html'.format(self.wormbase_id)
         if not os.path.isfile(filename):
-            soup = BeautifulSoup(data)
+            soup = beautifulSoup(data)
             links = soup.find_all('a', {'class': 'protein-link'})
             if links:
                 r = requests.get(
@@ -140,7 +145,7 @@ class PrimaryGene():
         else:
             with open(filename, 'r') as f:
                 data = f.read()
-        soup = BeautifulSoup(data)
+        soup = beautifulSoup(data)
         links = soup.find_all('a', {'class': 'protein-link'})
         if links:
             self.wormbase_homologs = [links[0].get('href').split(':')[-1], links[0].text]

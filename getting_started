@@ -6,3 +6,9 @@ Compile JackHHMER
 Download UniProt Swiss-Prot Fasta
 ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
 unzip it
+
+Download HumanDisease Ontology
+https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/master/src/ontology/HumanDO.obo
+
+Download  the mappings of DisGeNET genes (Entrez Gene Identifiers) to UniProt entries
+http://www.disgenet.org/ds/DisGeNET/results/mapa_geneid_4_uniprot_crossref.tsv.gz

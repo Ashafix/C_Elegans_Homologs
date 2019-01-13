@@ -6,7 +6,6 @@ import requests
 import json
 import pprint
 import time
-from Bio import AlignIO
 import jinja2
 import urllib.request, urllib.error, urllib.parse
 import xml.etree.ElementTree as ET
@@ -16,7 +15,7 @@ from HomologGene import HomologGene
 from PrimaryGene import PrimaryGene
 
 
-class homolog_finder():
+class HomologFinder():
     def __init__(self, xls_filename="",
                  urlUniprotId='http://www.uniprot.org/uniprot/?query=id',
                  urlCompara='https://rest.ensembl.org/homology/symbol/caenorhabditis_elegans/',
@@ -42,7 +41,8 @@ class homolog_finder():
         self.urls['overlap'] = urlOverlap
         self.urls['uniprot'] = urlUniprot
         self.urls['disgenet'] = urlDisgenet
-        self.required_folders = ['brain', 'compara', 'wormbase_protein', 'aliases', 'disgenet', 'uniprot']
+        self.required_folders = ['brain', 'compara', 'wormbase_protein', 'aliases', 'disgenet',
+                                 'uniprot', 'jackhmmer', 'fasta']
         self.main_folder = main_folder
         self.disgenet = dict() #stores all the gene to disease assocations
         self.disgenet_raw = dict() #stores all raw data from disgenet
@@ -240,9 +240,9 @@ class homolog_finder():
         expression = dict(expressed=0, not_expressed=0, unknown=0)
         for human_homolog in self.human_homologs:
             for homolog in self.human_homologs[human_homolog]:
-                if homolog.expressed_in_brain == True:
+                if homolog.expressed_in_brain:
                     expression['expressed'] += 1
-                elif homolog.expressed_in_brain == False:
+                elif not homolog.expressed_in_brain:
                     expression['not_expressed'] += 1
                 else:
                     expression['unknown'] += 1
@@ -263,7 +263,6 @@ class homolog_finder():
         attributes['sequence'] = ''
         attributes['gene_id'] = ''
         filename = 'uniprot/{}.xml'.format(uniprot_id)
-        #print(filename)
         if not os.path.isfile(filename):
             r = requests.get('{0}/{1}.xml'.format(self.urls['uniprot'], uniprot_id))
             with open(filename, 'w') as f:
@@ -431,7 +430,7 @@ class homolog_finder():
                             error = (True, d.get('primary_id'))
                     else:
                         error = (False, '')
-            if error[0] == True:
+            if error[0]:
                 print('Error in row {0}: Given Uniprot ID {1} does not match retrieved Uniprot ID {2}'.format(i + 1,
                                                                                                               xl_sheet.cell_value(
                                                                                                                   rowx=i,
@@ -449,7 +448,7 @@ class homolog_finder():
                             error = (True, d.get('display_id'))
                     else:
                         error = (False, '')
-            if error[0] == True:
+            if error[0]:
                 print('Error in row {0}: Given display ID {1} does not match retrieved display ID {2}'.format(i + 1,
                                                                                                               xl_sheet.cell_value(
                                                                                                                   rowx=i,
@@ -533,7 +532,7 @@ class homolog_finder():
             table[-1].append(homolog.name)
             if homolog.expressed_in_brain:
                 table[-1].append('yes')
-            elif homolog.expressed_in_brain == False:
+            elif not homolog.expressed_in_brain:
                 table[-1].append('no')
             else:
                 table[-1].append('unknown')
@@ -665,6 +664,7 @@ class homolog_finder():
         :param gene: a string with GeneID, e.g. SEZ6 
         :return: 
         """
+        pass
 
 
     def read_disgenet_map(self):
@@ -682,6 +682,8 @@ class homolog_finder():
             self.disgenet_map[cells[0]] = cells[1]
 
         return None
+
+
     def get_diseases_from_disgenet(self, uniprot_id, filename='', overwrite=False):
         """
 
@@ -829,16 +831,34 @@ def report(homolog_finder, disease_threshold=[0, 10**6]):
 
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Finds homologs for C. Elegans genes in humans')
-    parser.add_argument('--input_filename', help='an Excel file which contains the C. Elegans genes')
-    parser.add_argument('--jackhmmer', help='location of the jackhmmer executable')
-    parser.add_argument('--uniprot', help='location of the UniProt Swiss-Pro FASTA file')
+    parser.add_argument('input_filename', help='an Excel file which contains the C. Elegans genes')
+    parser.add_argument('--jackhmmer',
+                        help='location of the jackhmmer executable',
+                        default='jackhmmer')
+    parser.add_argument('--uniprot',
+                        help='location of the UniProt Swiss-Pro FASTA file',
+                        default='uniprot_sprot.fasta')
     return parser.parse_args(args)
+
+def validate_args(args):
+    if not os.path.isfile(args.input_filename):
+        return (False, 'Input Excel file is missing')
+    if not os.path.isfile(args.jackhmmer) or not os.access(args.jackhmmer, os.X_OK):
+        return (False, 'jackHMMER executable is not found not or cannot be executed')
+    if not os.path.isfile(args.uniprot):
+        return (False, 'UniProt Swiss-Pro FASTA file is missing')
+
+    return True, ''
+
 
 if __name__ == '__main__':
     
     args = parse_args(sys.argv[1:])
-    new_homolog_finder = homolog_finder(xls_filename=args.input_filename,
-                                        jackhmmer=args.jackhmmer)
+    if not validate_args(args)[0]:
+        print(validate_args(args)[1])
+        sys.exit(1)
+    homolog_finder = HomologFinder(xls_filename=args.input_filename,
+                                       jackhmmer=args.jackhmmer)
     # for k in new_homolog_finder.homologs.keys():
     #    pass
 
@@ -852,13 +872,15 @@ if __name__ == '__main__':
     # for i in range(1, len(alignment)):
     #    print(alignment[i].letter_annotations['posterior_probability'].count('*') / len(alignment[0].seq))
 
-    k = list(new_homolog_finder.homologs.keys())[0]
-    print(new_homolog_finder.homologs[k][0])
+    for i in range(len(homolog_finder.homologs.keys())):
+        k = list(homolog_finder.homologs.keys())[i]
+        print(homolog_finder.homologs[k][0])
 
-    new_homolog_finder.calculate_scores()
-    new_homolog_finder.get_disease_statistics()
+    sys.exit()
+    homolog_finder.calculate_scores()
+    homolog_finder.get_disease_statistics()
 
-    for homo in new_homolog_finder.homologs:
-        for x in new_homolog_finder.homologs[homo]:
+    for homo in homolog_finder.homologs:
+        for x in homolog_finder.homologs[homo]:
             if x.disgenet and x.disgenet.get('diseases'):
                 print(x)
