@@ -41,18 +41,33 @@ class PrimaryGene:
         self.get_uniprot_ids_from_hmmer()
         self.get_info_from_wormbase()
 
-    def run_jackhmmer(self):
-        """
-        Starts the jackhmmer executable and stores the output
-        :return: None
-        """
+    def get_sequence(self, return_filename=False):
+        if self.uniprot_id == '':
+            raise ValueError('no Uniprot ID given')
         filename = os.path.join('fasta', '{0}.fasta'.format(self.uniprot_id))
-        jackhmmer_output = 'jackhmmer/jackhmmer_{0}.aln'.format(self.uniprot_id)
 
         if not os.path.isfile(filename) or self.overwrite:
             r = requests.get('{0}/{1}.fasta'.format(self.homolog_finder.urls['uniprot'], self.uniprot_id))
             with open(filename, 'w') as f:
                 f.write(r.text)
+            sequence = r.text
+        elif not return_filename:
+            with open(filename) as f:
+                sequence = f.read()
+        if return_filename:
+            return filename
+
+        return sequence
+
+
+    def run_jackhmmer(self):
+        """
+        Starts the jackhmmer executable and stores the output
+        :return: None
+        """
+
+        filename = self.get_sequence(return_filename=True)
+        jackhmmer_output = 'jackhmmer/jackhmmer_{0}.aln'.format(self.uniprot_id)
         if not os.path.isfile(jackhmmer_output) or self.overwrite:
             args = [self.homolog_finder.jackhmmer,
                     '-A',
